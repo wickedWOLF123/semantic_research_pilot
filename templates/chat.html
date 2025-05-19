@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Semantic Research Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #181818; color: #eee; }
+        #chat { max-width: 600px; margin: 40px auto; background: #222; padding: 20px; border-radius: 8px; }
+        .message { margin-bottom: 16px; }
+        .user { color: #8ecae6; }
+        .bot { color: #ffd166; }
+        #input-area { display: flex; margin-top: 20px; }
+        #question { flex: 1; padding: 8px; border-radius: 4px; border: none; }
+        #send { padding: 8px 16px; border: none; border-radius: 4px; background: #219ebc; color: #fff; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <h2>Semantic Research Chat</h2>
+        <div id="messages"></div>
+        <div id="references"></div>
+        <div id="input-area">
+            <input type="text" id="question" placeholder="Type your research question..." autocomplete="off" />
+            <button id="send">Send</button>
+        </div>
+    </div>
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const questionInput = document.getElementById('question');
+        const sendBtn = document.getElementById('send');
+
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = 'message ' + sender;
+            div.innerHTML = `<b>${sender === 'user' ? 'You' : 'Assistant'}:</b> ${text}`;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        sendBtn.onclick = async function() {
+            const question = questionInput.value.trim();
+            if (!question) return;
+            addMessage(question, 'user');
+            questionInput.value = '';
+            addMessage('Thinking...', 'bot');
+            try {
+                const response = await fetch('/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                const data = await response.json();
+                messagesDiv.lastChild.remove(); // Remove 'Thinking...'
+                if (data.final_report) {
+                    addMessage(data.final_report.replace(/\\n/g, '<br>'), 'bot');
+                    // Render references dropdown if present
+                    if (data.global_references && data.global_references.length > 0) {
+                        let refHtml = '<details><summary>Show References</summary><ol>';
+                        for (const ref_obj of data.global_references) {
+                            refHtml += `<li>[${ref_obj.id}] <a href="${ref_obj.url}" target="_blank">${ref_obj.url}</a></li>`;
+                        }
+                        refHtml += '</ol></details>';
+                        addMessage(refHtml, 'bot'); // Add as a new message block
+                    }
+                } else {
+                    addMessage('Sorry, I could not generate a report.', 'bot');
+                }
+            } catch (e) {
+                messagesDiv.lastChild.remove();
+                addMessage('Error: ' + e, 'bot');
+            }
+        };
+
+        questionInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+    </script>
+</body>
+</html>
