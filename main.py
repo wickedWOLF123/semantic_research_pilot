@@ -36,7 +36,8 @@ async def run_graph(request: QueryRequest):
                     "mini_report": getattr(s.result, "mini_report", None) if s.result else None,
                     "references": getattr(s, "references", [])
                 } for s in result.get("subtasks", [])
-            ]
+            ],
+            "global_references": result.get("global_references", [])
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

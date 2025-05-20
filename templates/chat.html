@@ -3,23 +3,182 @@
 <head>
     <title>Semantic Research Chat</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #181818; color: #eee; }
-        #chat { max-width: 600px; margin: 40px auto; background: #222; padding: 20px; border-radius: 8px; }
-        .message { margin-bottom: 16px; }
-        .user { color: #8ecae6; }
-        .bot { color: #ffd166; }
-        #input-area { display: flex; margin-top: 20px; }
-        #question { flex: 1; padding: 8px; border-radius: 4px; border: none; }
-        #send { padding: 8px 16px; border: none; border-radius: 4px; background: #219ebc; color: #fff; cursor: pointer; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #121212; /* Darker background */
+            color: #E0E0E0; /* Light text */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #chat-container {
+            width: 100%;
+            max-width: 700px; /* Slightly wider chat container */
+            height: 90vh;
+            max-height: 800px;
+            background-color: #1E1E1E; /* Chat area background */
+            border-radius: 12px; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Softer shadow */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #chat-header {
+            background-color: #2C2C2C; /* Header background */
+            color: #FFFFFF;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+        #messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4F4F4F #1E1E1E;
+        }
+        /* For Webkit browsers */
+        #messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        #messages::-webkit-scrollbar-track {
+            background: #1E1E1E;
+        }
+        #messages::-webkit-scrollbar-thumb {
+            background-color: #4F4F4F;
+            border-radius: 4px;
+            border: 2px solid #1E1E1E;
+        }
+        .message { 
+            margin-bottom: 18px; 
+            padding: 10px 15px;
+            border-radius: 18px; /* Pill-shaped messages */
+            line-height: 1.5;
+            max-width: 85%; /* Messages don't span full width */
+        }
+        .user { 
+            background-color: #375a7f; /* User message blue */
+            color: #FFFFFF;
+            align-self: flex-end; /* Align user messages to the right */
+            margin-left: auto; /* Push to the right */
+            border-bottom-right-radius: 5px; /* Differentiate user bubble */
+        }
+        .bot { 
+            background-color: #2A3B4D; /* Bot message darker blue-grey */
+            color: #E0E0E0;
+            align-self: flex-start; /* Align bot messages to the left */
+            border-bottom-left-radius: 5px; /* Differentiate bot bubble */
+        }
+        .message b { /* Styling for "You:" and "Assistant:" */
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        #input-area { 
+            display: flex; 
+            padding: 15px; 
+            border-top: 1px solid #333; /* Separator line */
+            background-color: #2C2C2C; /* Input area background */
+        }
+        #question { 
+            flex: 1; 
+            padding: 12px 15px; 
+            border-radius: 20px; /* Pill-shaped input */
+            border: 1px solid #4F4F4F;
+            background-color: #333333; /* Darker input field */
+            color: #E0E0E0;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+        #question:focus {
+            outline: none;
+            border-color: #8B5CF6; /* Accent color on focus */
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
+        }
+        #send { 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 20px; /* Pill-shaped button */
+            background-color: #7C3AED; /* Vibrant purple button */
+            color: #FFFFFF; 
+            cursor: pointer; 
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        #send:hover { 
+            background-color: #6D28D9; /* Darker purple on hover */
+        }
+        .references-dropdown {
+            margin-top: 15px;
+            background-color: #2C2C2C;
+            border-radius: 8px;
+            padding: 5px;
+            max-width: 85%; /* Match message width */
+        }
+        .references-dropdown summary {
+            padding: 10px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            color: #C4B5FD; /* Lighter purple for summary */
+            transition: color 0.2s ease;
+        }
+        .references-dropdown summary:hover {
+            color: #A78BFA;
+        }
+        .references-dropdown[open] summary {
+            border-bottom: 1px solid #4F4F4F;
+            margin-bottom: 10px;
+        }
+        .references-dropdown ol {
+            list-style-type: decimal;
+            padding-left: 35px; /* Indent list */
+            margin: 0;
+            max-height: 150px; /* Limit height and make scrollable if too many */
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4F4F4F #2C2C2C;
+        }
+        .references-dropdown ol::-webkit-scrollbar {
+            width: 6px;
+        }
+        .references-dropdown ol::-webkit-scrollbar-track {
+            background: #2C2C2C;
+        }
+        .references-dropdown ol::-webkit-scrollbar-thumb {
+            background-color: #4F4F4F;
+            border-radius: 3px;
+        }
+        .references-dropdown li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .references-dropdown li a {
+            color: #A5B4FC; /* Link color */
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .references-dropdown li a:hover {
+            color: #818CF8; /* Darker link color on hover */
+            text-decoration: underline;
+        }
+        .thinking-message {
+            font-style: italic;
+            color: #9CA3AF; /* Lighter grey for thinking message */
+        }
     </style>
 </head>
 <body>
-    <div id="chat">
-        <h2>Semantic Research Chat</h2>
+    <div id="chat-container">
+        <div id="chat-header">Semantic Research Assistant</div>
         <div id="messages"></div>
-        <div id="references"></div>
         <div id="input-area">
-            <input type="text" id="question" placeholder="Type your research question..." autocomplete="off" />
+            <input type="text" id="question" placeholder="Ask a research question..." autocomplete="off" />
             <button id="send">Send</button>
         </div>
     </div>
@@ -28,12 +187,31 @@
         const questionInput = document.getElementById('question');
         const sendBtn = document.getElementById('send');
 
-        function addMessage(text, sender) {
+        function addMessage(text, sender, isThinking = false) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.style.display = 'flex'; // Wrapper to help with alignment
+            if (sender === 'user') {
+                messageWrapper.style.justifyContent = 'flex-end';
+            } else {
+                // Bot messages (including thinking and references) align left by default block display
+            }
+
             const div = document.createElement('div');
             div.className = 'message ' + sender;
-            div.innerHTML = `<b>${sender === 'user' ? 'You' : 'Assistant'}:</b> ${text}`;
-            messagesDiv.appendChild(div);
+            
+            if (isThinking) {
+                div.classList.add('thinking-message');
+                div.textContent = text;
+            } else {
+                // Ensure backticks within the text are escaped for innerHTML
+                const safeText = text.replace(/`/g, '&#96;');
+                div.innerHTML = `<b>${sender === 'user' ? 'You' : 'Assistant'}:</b> ${safeText}`;
+            }
+            
+            messageWrapper.appendChild(div);
+            messagesDiv.appendChild(messageWrapper);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return div; // Return the message div itself for removal if needed
         }
 
         sendBtn.onclick = async function() {
@@ -41,7 +219,8 @@
             if (!question) return;
             addMessage(question, 'user');
             questionInput.value = '';
-            addMessage('Thinking...', 'bot');
+            const thinkingMsgDiv = addMessage('Assistant is thinking...', 'bot', true);
+
             try {
                 const response = await fetch('/run', {
                     method: 'POST',
@@ -49,18 +228,33 @@
                     body: JSON.stringify({ question })
                 });
                 const data = await response.json();
-                messagesDiv.lastChild.remove(); // Remove 'Thinking...'
+                
+                if (thinkingMsgDiv && thinkingMsgDiv.parentElement) {
+                    thinkingMsgDiv.parentElement.remove();
+                }
+
                 if (data.final_report) {
-                    addMessage(data.final_report.replace(/\\n/g, '<br>'), 'bot');
-                    // Render references dropdown if present
+                    const reportText = data.final_report.replace(/\n/g, '<br>').replace(/`/g, '&#96;');
+                    addMessage(reportText, 'bot');
+
                     if (data.global_references && data.global_references.length > 0) {
-                        let refHtml = '<div class="references-block"><details open><summary><b>References</b></summary><ol>';
+                        let refHtml = '';
+                        refHtml += '<details class="references-dropdown">';
+                        refHtml += `<summary>References (${data.global_references.length})</summary>`;
+                        refHtml += '<ol>';
                         for (const ref_obj of data.global_references) {
-                            refHtml += `<li>[${ref_obj.id}] <a href="${ref_obj.url}" target="_blank">${ref_obj.url}</a></li>`;
+                            // Ensure URL is properly escaped for HTML attribute and display
+                            const BsafeUrl = encodeURI(ref_obj.url);
+                            const displayUrl = ref_obj.url.length > 60 ? ref_obj.url.substring(0, 57) + '...' : ref_obj.url;
+                            refHtml += `<li>[${ref_obj.id}] <a href="${BsafeUrl}" target="_blank" title="${ref_obj.url}">${displayUrl}</a></li>`;
                         }
-                        refHtml += '</ol></details></div>';
-                        // Instead of addMessage, append directly to messagesDiv for better styling
+                        refHtml += '</ol>';
+                        refHtml += '</details>';
+                        
+                        // No need for an extra wrapper for references, it can be a block element.
                         const refDiv = document.createElement('div');
+                        // To ensure it doesn't get message styling if not intended:
+                        // refDiv.className = 'bot-reference-block'; // Optional: for specific styling if needed
                         refDiv.innerHTML = refHtml;
                         messagesDiv.appendChild(refDiv);
                         messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -69,13 +263,18 @@
                     addMessage('Sorry, I could not generate a report.', 'bot');
                 }
             } catch (e) {
-                messagesDiv.lastChild.remove();
-                addMessage('Error: ' + e, 'bot');
+                if (thinkingMsgDiv && thinkingMsgDiv.parentElement) {
+                     thinkingMsgDiv.parentElement.remove();
+                }
+                addMessage('Error: ' + e.toString().replace(/`/g, '&#96;'), 'bot');
             }
         };
 
         questionInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') sendBtn.click();
+            if (e.key === 'Enter' && !e.shiftKey) { 
+                e.preventDefault(); 
+                sendBtn.click();
+            }
         });
     </script>
 </body>
