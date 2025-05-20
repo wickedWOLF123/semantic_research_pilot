@@ -54,12 +54,16 @@
                     addMessage(data.final_report.replace(/\\n/g, '<br>'), 'bot');
                     // Render references dropdown if present
                     if (data.global_references && data.global_references.length > 0) {
-                        let refHtml = '<details><summary>Show References</summary><ol>';
+                        let refHtml = '<div class="references-block"><details open><summary><b>References</b></summary><ol>';
                         for (const ref_obj of data.global_references) {
                             refHtml += `<li>[${ref_obj.id}] <a href="${ref_obj.url}" target="_blank">${ref_obj.url}</a></li>`;
                         }
-                        refHtml += '</ol></details>';
-                        addMessage(refHtml, 'bot'); // Add as a new message block
+                        refHtml += '</ol></details></div>';
+                        // Instead of addMessage, append directly to messagesDiv for better styling
+                        const refDiv = document.createElement('div');
+                        refDiv.innerHTML = refHtml;
+                        messagesDiv.appendChild(refDiv);
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
                     }
                 } else {
                     addMessage('Sorry, I could not generate a report.', 'bot');

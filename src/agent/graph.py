@@ -65,7 +65,7 @@ class State:
 
 PLANNING_PROMPT = ChatPromptTemplate.from_template(
     """
-    You are a research assistant. Given the following question, break it down into a list of 5 to 7 clear, actionable subtasks that, when answered, will fully address the original question.\nQuestion: {question}\nSubtasks:\n1.
+    You are a research assistant. Given the following question, break it down into a list of 2 to 4 clear, actionable subtasks that, when answered, will fully address the original question.\nQuestion: {question}\nSubtasks:\n1.
     """
 )
 
@@ -163,7 +163,7 @@ async def retriever_agent(state: State, config: RunnableConfig) -> Dict[str, Any
             all_retrieved_docs = []
             all_references = []
             for query in queries:
-                retrieved_docs_for_query = await retriever.aget_relevant_documents(query) # Use async version
+                retrieved_docs_for_query = await retriever.ainvoke(query)
                 all_retrieved_docs.extend(retrieved_docs_for_query)
                 for doc in retrieved_docs_for_query:
                     if hasattr(doc, 'metadata') and doc.metadata.get('source'):
