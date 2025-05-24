@@ -120,8 +120,8 @@ Report:
 
 async def planning_agent(state: State, config: RunnableConfig) -> Dict[str, Any]:
     """Generate subtasks from the user's question using an LLM."""
-    question = state.question
-    if not question.strip():
+    question = state.get("question")
+    if not question or not question.strip():
         return {"subtasks": []}
     planner = planning_prompt | planning_llm
     response = await planner.ainvoke({"question": question}, config=config)
@@ -136,7 +136,7 @@ async def planning_agent(state: State, config: RunnableConfig) -> Dict[str, Any]
 
 async def query_generation_agent(state: State, config: RunnableConfig) -> Dict[str, Any]:
     """Generate search queries for the current subtask using an LLM."""
-    subtasks = state.subtasks or []
+    subtasks = state.get("subtasks") or []
     for subtask_idx, subtask in enumerate(subtasks):
         if not subtask.queries:  # Only generate if not already present
             query_generator = query_generation_prompt | query_generation_llm
@@ -152,7 +152,7 @@ async def query_generation_agent(state: State, config: RunnableConfig) -> Dict[s
 
 async def retriever_agent(state: State, config: RunnableConfig) -> Dict[str, Any]:
     """Retrieve documents for the queries of the first subtask with queries using Tavily."""
-    subtasks = state.subtasks or []
+    subtasks = state.get("subtasks") or []
     for subtask_idx, subtask in enumerate(subtasks):
         if subtask.queries and not subtask.results: # Only retrieve if queries exist and no results yet
             all_docs_for_subtask = []
@@ -188,8 +188,8 @@ async def retriever_agent(state: State, config: RunnableConfig) -> Dict[str, Any
 
 async def reporting_agent(state: State, config: RunnableConfig) -> Dict[str, Any]:
     """Generate a final report by synthesizing information from all subtasks."""
-    question = state.question
-    subtasks = state.subtasks or []
+    question = state.get("question")
+    subtasks = state.get("subtasks") or []
 
     subtask_reports_and_docs = ""
     global_references = []
@@ -223,8 +223,8 @@ async def reporting_agent(state: State, config: RunnableConfig) -> Dict[str, Any
 
 def router(state: State, config: RunnableConfig) -> str:
     """Determine the next step in the research process."""
-    subtasks = state.subtasks or []
-    if not subtasks and state.question:
+    subtasks = state.get("subtasks") or []
+    if not subtasks and state.get("question"):
         return "planning_agent"
 
     for subtask in subtasks:
