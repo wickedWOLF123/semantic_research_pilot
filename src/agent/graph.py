@@ -34,6 +34,7 @@ MAX_RESULTS_PER_QUERY = 3
 
 @dataclass
 class SubTask:
+    """Represents a subtask in the research process."""
     description: str
     queries: List[str] = field(default_factory=list)
     results: List[str] = field(default_factory=list)
@@ -42,6 +43,7 @@ class SubTask:
 
 
 class State(TypedDict):
+    """Represents the state of the research graph."""
     question: str
     subtasks: List[SubTask]
     report: Any # Using Any for report as its structure might vary
@@ -272,23 +274,23 @@ graph = workflow.compile()
 
 # Example usage (for testing, can be removed or commented out)
 async def main():
-    """Example of how to run the graph with a sample question."""
+    """Run an example of the graph with a sample question."""
     config = {"configurable": {"thread_id": "RESEARCH_THREAD"}}
     example_question = "What are the latest advancements in AI for drug discovery?"
 
     async for event in graph.astream(
         {"question": example_question}, config=config
     ):
-        # print("---- EVENT ----")
-        # print(event)
-        # print("---- END EVENT ----\n")
+        # import logging
+        # logging.info(f"---- EVENT ----\n{event}\n---- END EVENT ----\n")
         if "report" in event:
-            print("\n\n--- FINAL REPORT ---")
-            print(event["report"].content)
+            # logging.info(f"\n\n--- FINAL REPORT ---\n{event[\'report\'].content}")
             if event.get("global_references"):
-                print("\n--- REFERENCES ---")
-                for ref in event["global_references"]:
-                    print(f"[{ref['id']}] {ref['title']} ({ref['url']})")
+                # references_log = "\n--- REFERENCES ---\n"
+                # for ref in event["global_references"]:
+                #     references_log += f"[{ref['id']}] {ref['title']} ({ref['url']})\n"
+                # logging.info(references_log)
+                pass # Placeholder for actual logging if needed in the future
 
 if __name__ == "__main__":
     import asyncio

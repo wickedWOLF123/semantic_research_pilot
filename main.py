@@ -1,18 +1,15 @@
 """Main FastAPI application file."""
-import os
-from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel
 from dotenv import load_dotenv
-import asyncio
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+
+from src.agent.graph import graph
 
 # Load environment variables
 load_dotenv()
-
-# Import the compiled graph
-from src.agent.graph import graph
 
 app = FastAPI()
 
@@ -28,7 +25,7 @@ class QueryRequest(BaseModel):
 
 @app.post("/run")
 async def run_graph(request: QueryRequest):
-    """Runs the LangGraph agent with the user's question."""
+    """Run the LangGraph agent with the user's question."""
     try:
         # Run the graph asynchronously with the user's question
         config = {"configurable": {"thread_id": "CORPUS_RESEARCH"}}
@@ -53,5 +50,5 @@ async def run_graph(request: QueryRequest):
 
 @app.get("/", response_class=HTMLResponse)
 async def chat_page(request: Request):
-    """Serves the main chat page."""
+    """Serve the main chat page."""
     return templates.TemplateResponse("chat.html", {"request": request}) 
